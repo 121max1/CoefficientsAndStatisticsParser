@@ -40,32 +40,141 @@ namespace Parser
                     _driver.FindElement(By.Name("ctl00$MainContent$txtNum")).SendKeys(matchesAmount);
                     _driver.FindElement(By.XPath("//*[@id='MainContent_pnlRefresh']/input")).Click();
                     //_driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-                    Thread.Sleep(4000);
+                    Thread.Sleep(1000);
+                    var stylePageLoading = _driver.FindElement(By.Id("PageUpdateProgress")).GetAttribute("style");
+                    while(stylePageLoading == "display: block;")
+                    {
+                        Thread.Sleep(1000);
+                        stylePageLoading = _driver.FindElement(By.Id("PageUpdateProgress")).GetAttribute("style");
+                    };
                     var teamStatistics = new TeamStatistics();
                     teamStatistics.Name = url.Key;
-                    var winAmount = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[2]/td[3]")).Text);
-                    var drawAmount = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[3]/td[3]")).Text);
-                    var loseAmount = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[4]/td[3]")).Text);
+                    int? winAmountTableRow = null;
+                    int? drawAmountTableRow = null;
+                    int? loseAmountTableRow = null;
+                    var tableNamesRight = _driver.FindElements(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr/td[1]")).Select(e => e.Text).ToList();
+                    for (int i = 0; i < tableNamesRight.Count; i++)
+                    {
+                        if(tableNamesRight[i] == "Победы")
+                        {
+                            winAmountTableRow = i + 1;
+                        }
+                        if(tableNamesRight[i] == "Ничьи")
+                        {
+                            drawAmountTableRow = i + 1;
+                        }
+                        if(tableNamesRight[i] == "Поражения")
+                        {
+                            loseAmountTableRow = i + 1;
+                        }
+                    }
+                    var winAmount = winAmountTableRow.HasValue? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[{winAmountTableRow}]/td[3]")).Text) : 0;
+                    var drawAmount = drawAmountTableRow.HasValue? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[{drawAmountTableRow}]/td[3]")).Text) : 0;
+                    var loseAmount = loseAmountTableRow.HasValue? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[{loseAmountTableRow}]/td[3]")).Text) : 0;
                     teamStatistics.MatchesAtHome = winAmount + drawAmount + loseAmount;
-                    teamStatistics.MissedGoalsHome = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[3]/td[3]")).Text);
-                    teamStatistics.GoalsScoredHome = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[2]/td[3]")).Text);
-                    teamStatistics.ShotsOnTargetHome = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[18]/td[3]")).Text);
-                    teamStatistics.MissedOnTargetHome = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[19]/td[3]")).Text);
+
+                    int? missedGoalsHomeRow = null;
+                    int? goalsScoredHomeRow = null;
+                    int? shotsOnTargetHomeRow = null;
+                    int? missedOnTargetRow = null;
+
+                    var tableNamesLeft = _driver.FindElements(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr/td[1]")).Select(e => e.Text).ToList();
+
+                    for (int i = 0; i < tableNamesLeft.Count; i++)
+                    {
+                        if (tableNamesLeft[i] == "Пропущенные мячи")
+                        {
+                            missedGoalsHomeRow = i + 1;
+                        }
+                        if (tableNamesLeft[i] == "Забитые мячи")
+                        {
+                            goalsScoredHomeRow = i + 1;
+                        }
+                        if (tableNamesLeft[i] == "Удары в створ")
+                        {
+                            shotsOnTargetHomeRow = i + 1;
+                        }
+                        if (tableNamesLeft[i] == "Удары в створ (соперники)")
+                        {
+                            missedOnTargetRow = i + 1;
+                        }
+                    }
+
+                    teamStatistics.MissedGoalsHome = missedGoalsHomeRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{missedGoalsHomeRow}]/td[3]")).Text) : null;
+                    teamStatistics.GoalsScoredHome = goalsScoredHomeRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{goalsScoredHomeRow}]/td[3]")).Text) : null;
+                    teamStatistics.ShotsOnTargetHome = shotsOnTargetHomeRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{shotsOnTargetHomeRow}]/td[3]")).Text) : null;
+                    teamStatistics.MissedOnTargetHome = missedOnTargetRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{missedOnTargetRow}]/td[3]")).Text) : null;
 
                     var selectTypeAway = new SelectElement(_driver.FindElement(By.Id("MainContent_ddlState")));
                     selectTypeAway.SelectByValue("2"); //Away
                     _driver.FindElement(By.XPath("//*[@id='MainContent_pnlRefresh']/input")).Click();
+                    Thread.Sleep(1000);
                     //_driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(3);
-                    Thread.Sleep(4000);
+
+                    stylePageLoading = _driver.FindElement(By.Id("PageUpdateProgress")).GetAttribute("style");
+                    while (stylePageLoading == "display: block;")
+                    {
+                        Thread.Sleep(1000);
+                        stylePageLoading = _driver.FindElement(By.Id("PageUpdateProgress")).GetAttribute("style");
+                    };
                     new WebDriverWait(_driver, TimeSpan.FromSeconds(10)).Until(e => e.FindElement(By.XPath("//*[@id='MainContent_pnlRefresh']/input")));
-                    var winAmountAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[2]/td[3]")).Text);
-                    var drawAmountAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[3]/td[3]")).Text);
-                    var loseAmountAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[4]/td[3]")).Text);
+
+                    int? winAmountAwayTableRow = null;
+                    int? drawAmountAwayTableRow = null;
+                    int? loseAmountAwayTableRow = null;
+                    var tableNamesRightAway = _driver.FindElements(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr/td[1]")).Select(e => e.Text).ToList();
+                    for (int i = 0; i < tableNamesRightAway.Count; i++)
+                    {
+                        if (tableNamesRightAway[i] == "Победы")
+                        {
+                            winAmountAwayTableRow = i + 1;
+                        }
+                        if (tableNamesRightAway[i] == "Ничьи")
+                        {
+                            drawAmountAwayTableRow = i + 1;
+                        }
+                        if (tableNamesRightAway[i] == "Поражения")
+                        {
+                            loseAmountAwayTableRow = i + 1;
+                        }
+                    }
+
+                    var winAmountAway = winAmountAwayTableRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[{winAmountAwayTableRow}]/td[3]")).Text) : 0;
+                    var drawAmountAway = drawAmountAwayTableRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[{drawAmountAwayTableRow}]/td[3]")).Text) : 0;
+                    var loseAmountAway = loseAmountAwayTableRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[3]/table/tbody/tr[{loseAmountAwayTableRow}]/td[3]")).Text) : 0;
                     teamStatistics.MatchesAway = winAmountAway + drawAmountAway + loseAmountAway;
-                    teamStatistics.MissedGoalsAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[3]/td[3]")).Text);
-                    teamStatistics.GoalsScoredAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[2]/td[3]")).Text);
-                    teamStatistics.ShotsOnTargetAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[18]/td[3]")).Text);
-                    teamStatistics.MissedOnTargetAway = int.Parse(_driver.FindElement(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[19]/td[3]")).Text);
+
+                    var tableNamesLeftAway = _driver.FindElements(By.XPath("//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr/td[1]")).Select(e => e.Text).ToList();
+
+                    int? missedGoalsAwayRow = null;
+                    int? goalsScoredAwayRow = null;
+                    int? shotsOnTargetAwayRow = null;
+                    int? missedOnTargetAwayRow = null;
+
+                    for (int i = 0; i < tableNamesLeftAway.Count; i++)
+                    {
+                        if (tableNamesLeftAway[i] == "Пропущенные мячи")
+                        {
+                            missedGoalsAwayRow = i + 1;
+                        }
+                        if (tableNamesLeftAway[i] == "Забитые мячи")
+                        {
+                            goalsScoredAwayRow = i + 1;
+                        }
+                        if (tableNamesLeftAway[i] == "Удары в створ")
+                        {
+                            shotsOnTargetAwayRow = i + 1;
+                        }
+                        if (tableNamesLeftAway[i] == "Удары в створ (соперники)")
+                        {
+                            missedOnTargetAwayRow = i + 1;
+                        }
+                    }
+
+                    teamStatistics.MissedGoalsAway = missedGoalsAwayRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{missedGoalsAwayRow}]/td[3]")).Text) : null;
+                    teamStatistics.GoalsScoredAway = goalsScoredAwayRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{goalsScoredAwayRow}]/td[3]")).Text) : null;
+                    teamStatistics.ShotsOnTargetAway = shotsOnTargetAwayRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{shotsOnTargetAwayRow}]/td[3]")).Text) : null;
+                    teamStatistics.MissedOnTargetAway = missedOnTargetAwayRow.HasValue ? int.Parse(_driver.FindElement(By.XPath($"//*[@id='MainContent_TabContainer_ctl00']/div[2]/div[2]/table/tbody/tr[{missedOnTargetAwayRow}]/td[3]")).Text) : null;
 
                     statictics.Add(teamStatistics);
                 }

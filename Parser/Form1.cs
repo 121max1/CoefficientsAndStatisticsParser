@@ -113,7 +113,13 @@ namespace Parser
                     coeffs.CoefficientsHandicapBetBrain,
                     coeffs.CoefficientsTotalBetBrain
                     );
-                File.WriteAllBytes($"{league} {DateTime.Now.Date.Day}.{DateTime.Now.Date.Month}.{DateTime.Now.Date.Year}.xlsx", excelDocument);
+                var saveDialog = new FolderBrowserDialog();
+
+                var fileName = $"{league} {DateTime.Now.Date.Day}.{DateTime.Now.Date.Month}.{DateTime.Now.Date.Year}.xlsx";
+                if (saveDialog.ShowDialog() == DialogResult.Cancel)
+                    return;
+
+                File.WriteAllBytes(saveDialog.SelectedPath + "/" + fileName, excelDocument);
                 MessageBox.Show(
                     "Файл успешно создан!",
                     "Успешно",
@@ -180,6 +186,71 @@ namespace Parser
                    MessageBoxOptions.DefaultDesktopOnly
                    );
             }
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            var saveDialog = new FolderBrowserDialog();
+            if (saveDialog.ShowDialog() == DialogResult.Cancel)
+                return;
+            var folderPath = saveDialog.SelectedPath;
+
+            foreach (var league in _statisticsUrls.Keys)
+            {
+                var statisticsUrls = _statisticsUrls[league];
+                var coeffLeagueUrl = _coeffLeagueUrls[league];
+                var betBrainUrl = "";
+                if (_betBrainUrls.ContainsKey(league))
+                {
+                    betBrainUrl = _betBrainUrls[league];
+                }
+
+                try
+                {
+                    var statistics = _parser.GetTeamStatistics(statisticsUrls, league, textBox1.Text);
+                    //var statistics = new List<TeamStatistics>();
+                    var coeffs = _parser.GetAllCoefficients(coeffLeagueUrl, betBrainUrl);
+
+                    var excelGenerator = new ExcelGenerator();
+
+                    byte[] excelDocument = excelGenerator.GenerateFile(
+                        new WinDrawLoseAndStatistics()
+                        {
+                            CoefficientsWinDrawLose = coeffs.CoefficientsWinDrawLose,
+                            TeamStatistics = statistics
+                        },
+                        new CoefficentsHandicapAndStatistics()
+                        {
+                            CoefficientsHandicaps = coeffs.CoefficientsHandicap,
+                            TeamStatistics = statistics
+                        },
+                        new CoefficeintsTotalAndStatistics()
+                        {
+                            BookmakerTotals = coeffs.CoefficientsTotal,
+                            TeamStatistics = statistics
+                        },
+                        coeffs.CoefficientsWinDrawLoseBetBrain,
+                        coeffs.CoefficientsHandicapBetBrain,
+                        coeffs.CoefficientsTotalBetBrain
+                        );
+
+                    var fileName = $"{league} {DateTime.Now.Date.Day}.{DateTime.Now.Date.Month}.{DateTime.Now.Date.Year}.xlsx";
+                    File.WriteAllBytes(folderPath + "/" + fileName, excelDocument);
+
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            MessageBox.Show(
+                "Файлы успешно сохранены!",
+                "Успешно",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information,
+                MessageBoxDefaultButton.Button1,
+                MessageBoxOptions.DefaultDesktopOnly
+                );
         }
     }
 }

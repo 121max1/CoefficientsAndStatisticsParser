@@ -24,7 +24,7 @@ namespace Parser.Entities
 
         public int? GoalsScoredAway { get; set; }
 
-        public int ShotsOnTargetAway { get; set; }
+        public int? ShotsOnTargetAway { get; set; }
 
         public int? MissedGoalsAway { get; set; }
 

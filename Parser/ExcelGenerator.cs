@@ -148,8 +148,8 @@ namespace Parser
                             sheet.Cells[2, currentPairCoeff].Value = totalMore;
                             sheet.Cells[2, currentPairCoeff + 1].Value = totalLess;
                         }
-                        sheet.Cells[indexMatchCoef, currentPairCoeff].Value = totalPair.TotalMore is null? "-": totalPair.TotalMore;
-                        sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = totalPair.TotalLess is null ? "-" : totalPair.TotalLess;
+                        sheet.Cells[indexMatchCoef, currentPairCoeff].Value = totalPair.TotalMore is null? "-": totalPair.TotalMore.Replace(".", ",");
+                        sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = totalPair.TotalLess is null ? "-" : totalPair.TotalLess.Replace(".", ",");
                         currentPairCoeff += 2;
                     }
                     startCoefIndex += totalBookmaker.TotalCoeffs.Count * 2 + 1;
@@ -219,8 +219,8 @@ namespace Parser
                                 sheet.Cells[rowNumForBook + 1, currentPairCoeff].Value = totalMore;
                                 sheet.Cells[rowNumForBook + 1, currentPairCoeff + 1].Value = totalLess;
                             }
-                            sheet.Cells[indexMatchCoef, currentPairCoeff].Value = totalPair.TotalMore is null ? "-" : totalPair.TotalMore;
-                            sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = totalPair.TotalLess is null ? "-" : totalPair.TotalLess;
+                            sheet.Cells[indexMatchCoef, currentPairCoeff].Value = totalPair.TotalMore is null ? "-" : totalPair.TotalMore.Replace(".", ",");
+                            sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = totalPair.TotalLess is null ? "-" : totalPair.TotalLess.Replace(".", ",");
                             currentPairCoeff += 2;
                         }
                         startCoefIndex += totalBookmaker.TotalCoeffs.Count * 2 + 1;
@@ -314,8 +314,8 @@ namespace Parser
                             sheet.Cells[2, currentPairCoeff].Value = homeTeam;
                             sheet.Cells[2, currentPairCoeff + 1].Value = awayTeam;
                         }
-                        sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null? "-" : coefPair.FirstTeam;
-                        sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam;
+                        sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null? "-" : coefPair.FirstTeam.Replace(".", ",");
+                        sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam.Replace(".", ",");
                         currentPairCoeff += 2;
                     }
                     currentPairCoeff++;
@@ -367,8 +367,8 @@ namespace Parser
                             sheet.Cells[2, currentPairCoeff].Value = homeTeam;
                             sheet.Cells[2, currentPairCoeff + 1].Value = awayTeam;
                         }
-                        sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null ? "-" : coefPair.FirstTeam;
-                        sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam;
+                        sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null ? "-" : coefPair.FirstTeam.Replace(".", ",");
+                        sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam.Replace(".", ",");
                         currentPairCoeff += 2;
                     }
                     startCoefIndex += coef.HandicapCoeffs.Count * 2 + coef.HandicapCoeffsInvert.Count * 2 + 2;
@@ -458,8 +458,8 @@ namespace Parser
                                 sheet.Cells[rowForBook + 1, currentPairCoeff].Value = homeTeam;
                                 sheet.Cells[rowForBook + 1, currentPairCoeff + 1].Value = awayTeam;
                             }
-                            sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null ? "-" : coefPair.FirstTeam;
-                            sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam;
+                            sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null ? "-" : coefPair.FirstTeam.Replace(".", ",");
+                            sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam.Replace(".", ",");
                             currentPairCoeff += 2;
                         }
                         currentPairCoeff++;
@@ -511,8 +511,8 @@ namespace Parser
                                 sheet.Cells[rowForBook + 1, currentPairCoeff].Value = homeTeam;
                                 sheet.Cells[rowForBook + 1, currentPairCoeff + 1].Value = awayTeam;
                             }
-                            sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null ? "-" : coefPair.FirstTeam;
-                            sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam;
+                            sheet.Cells[indexMatchCoef, currentPairCoeff].Value = coefPair.FirstTeam is null ? "-" : coefPair.FirstTeam.Replace(".", ",");
+                            sheet.Cells[indexMatchCoef, currentPairCoeff + 1].Value = coefPair.SecondTeam is null ? "-" : coefPair.SecondTeam.Replace(".", ",");
                             currentPairCoeff += 2;
                         }
                         startCoefIndex += coef.HandicapCoeffs.Count * 2 + coef.HandicapCoeffsInvert.Count * 2 + 2;
@@ -540,24 +540,20 @@ namespace Parser
 
             sheet.Cells[startIndex, 2].Value = "список";
             sheet.Cells[startIndex, 3].Value = "количество игр дома";
-            sheet.Cells[startIndex, 4].Value = "голы забитые";
-            sheet.Cells[startIndex, 5].Value = "ударов в створ";
+            sheet.Cells[startIndex, 5].Value = "голы забитые";
+            sheet.Cells[startIndex, 4].Value = "ударов в створ";
             sheet.Cells[startIndex, 7].Value = "голы пропущенные";
-            sheet.Cells[startIndex, 8].Value = "пропущенные удары в створ";
+            sheet.Cells[startIndex, 6].Value = "пропущенные удары в створ";
             sheet.Cells[startIndex, 11].Value = "список";
             sheet.Cells[startIndex, 12].Value = "количество игр на выезде";
-            sheet.Cells[startIndex, 13].Value = "голы забитые";
-            sheet.Cells[startIndex, 14].Value = "ударов в створ";
+            sheet.Cells[startIndex, 14].Value = "голы забитые";
+            sheet.Cells[startIndex, 13].Value = "ударов в створ";
             sheet.Cells[startIndex, 16].Value = "голы пропущенные";
-            sheet.Cells[startIndex, 17].Value = "пропущенные удары в створ";
-            sheet.Cells[startIndex, 2, startIndex, 5].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            sheet.Cells[startIndex, 2, startIndex, 5].Style.Fill.BackgroundColor.SetColor(Color.LightGreen);
-            sheet.Cells[startIndex, 7, startIndex, 8].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            sheet.Cells[startIndex, 7, startIndex, 8].Style.Fill.BackgroundColor.SetColor(Color.LightGreen);
-            sheet.Cells[startIndex, 11, startIndex, 14].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            sheet.Cells[startIndex, 11, startIndex, 14].Style.Fill.BackgroundColor.SetColor(Color.Red);
-            sheet.Cells[startIndex, 16, startIndex, 17].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            sheet.Cells[startIndex, 16, startIndex, 17].Style.Fill.BackgroundColor.SetColor(Color.Red);
+            sheet.Cells[startIndex, 15].Value = "пропущенные удары в створ";
+            sheet.Cells[startIndex, 2, startIndex, 7].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            sheet.Cells[startIndex, 2, startIndex, 7].Style.Fill.BackgroundColor.SetColor(Color.LightGreen);
+            sheet.Cells[startIndex, 11, startIndex, 16].Style.Fill.PatternType = ExcelFillStyle.Solid;
+            sheet.Cells[startIndex, 11, startIndex, 16].Style.Fill.BackgroundColor.SetColor(Color.Red);
 
             int statMatchStartIndex = startIndex + 1;
             int matchNum = 1;
@@ -565,17 +561,17 @@ namespace Parser
             {
                 sheet.Cells[statMatchStartIndex, 1].Value = matchNum;
                 sheet.Cells[statMatchStartIndex, 2].Value = teamStat.Name;
-                sheet.Cells[statMatchStartIndex, 3].Value = teamStat.MatchesAtHome;
-                sheet.Cells[statMatchStartIndex, 4].Value = teamStat.GoalsScoredHome;
-                sheet.Cells[statMatchStartIndex, 5].Value = teamStat.ShotsOnTargetHome;
-                sheet.Cells[statMatchStartIndex, 7].Value = teamStat.MissedGoalsHome;
-                sheet.Cells[statMatchStartIndex, 8].Value = teamStat.MissedOnTargetHome;
+                sheet.Cells[statMatchStartIndex, 3].Value = teamStat.MatchesAtHome.HasValue? teamStat.MatchesAtHome : "-";
+                sheet.Cells[statMatchStartIndex, 5].Value = teamStat.GoalsScoredHome.HasValue? teamStat.GoalsScoredHome : "-";
+                sheet.Cells[statMatchStartIndex, 4].Value = teamStat.ShotsOnTargetHome.HasValue ? teamStat.ShotsOnTargetHome : "-";
+                sheet.Cells[statMatchStartIndex, 7].Value = teamStat.MissedGoalsHome.HasValue ? teamStat.MissedGoalsHome : "-";
+                sheet.Cells[statMatchStartIndex, 6].Value = teamStat.MissedOnTargetHome.HasValue ? teamStat.MissedOnTargetHome : "-";
                 sheet.Cells[statMatchStartIndex, 11].Value = teamStat.Name;
-                sheet.Cells[statMatchStartIndex, 12].Value = teamStat.MatchesAway;
-                sheet.Cells[statMatchStartIndex, 13].Value = teamStat.GoalsScoredAway;
-                sheet.Cells[statMatchStartIndex, 14].Value = teamStat.ShotsOnTargetAway;
-                sheet.Cells[statMatchStartIndex, 16].Value = teamStat.MissedGoalsAway;
-                sheet.Cells[statMatchStartIndex, 17].Value = teamStat.MissedOnTargetAway;
+                sheet.Cells[statMatchStartIndex, 12].Value = teamStat.MatchesAway.HasValue ? teamStat.MatchesAway: "-";
+                sheet.Cells[statMatchStartIndex, 14].Value = teamStat.GoalsScoredAway.HasValue ? teamStat.GoalsScoredAway: "-";
+                sheet.Cells[statMatchStartIndex, 13].Value = teamStat.ShotsOnTargetAway.HasValue ? teamStat.ShotsOnTargetAway: "-";
+                sheet.Cells[statMatchStartIndex, 16].Value = teamStat.MissedGoalsAway.HasValue ? teamStat.MissedGoalsAway: "-";
+                sheet.Cells[statMatchStartIndex, 15].Value = teamStat.MissedOnTargetAway.HasValue ? teamStat.MissedOnTargetAway: "-";
                 matchNum++;
                 statMatchStartIndex++;
             }
@@ -647,9 +643,9 @@ namespace Parser
                             sheet.Cells[rowNumForBooks + 1, startCoefIndex + coefPerBookIndex + 1].Value = "X";
                             sheet.Cells[rowNumForBooks + 1, startCoefIndex + coefPerBookIndex + 2].Value = 2;
                         }
-                        sheet.Cells[indexMatchCoef, startCoefIndex + coefPerBookIndex].Value = coef.Win is null ? "-" : coef.Win;
-                        sheet.Cells[indexMatchCoef, startCoefIndex + coefPerBookIndex + 1].Value = coef.Draw is null ? "-" : coef.Draw;
-                        sheet.Cells[indexMatchCoef, startCoefIndex + coefPerBookIndex + 2].Value = coef.Lose is null ? "-" : coef.Lose;
+                        sheet.Cells[indexMatchCoef, startCoefIndex + coefPerBookIndex].Value = coef.Win is null ? "-" : coef.Win.Replace(".", ",");
+                        sheet.Cells[indexMatchCoef, startCoefIndex + coefPerBookIndex + 1].Value = coef.Draw is null ? "-" : coef.Draw.Replace(".", ",");
+                        sheet.Cells[indexMatchCoef, startCoefIndex + coefPerBookIndex + 2].Value = coef.Lose is null ? "-" : coef.Lose.Replace(".", ",");
                         sheet.Cells[rowNumForBooks, startCoefIndex + coefPerBookIndex, rowNumForBooks, startCoefIndex + coefPerBookIndex + 2].Value = coef.Bookmaker.ToString();
                         sheet.Cells[rowNumForBooks, startCoefIndex + coefPerBookIndex, rowNumForBooks, startCoefIndex + coefPerBookIndex + 2].Style.Fill.PatternType = ExcelFillStyle.Solid;
                         sheet.Cells[rowNumForBooks, startCoefIndex + coefPerBookIndex, rowNumForBooks, startCoefIndex + coefPerBookIndex + 2].Style.Fill.BackgroundColor.SetColor(_colors[colorIndex]);
