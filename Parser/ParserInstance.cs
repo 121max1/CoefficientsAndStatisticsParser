@@ -201,6 +201,7 @@ namespace Parser
             //List<BetonMatchJsonEntity> betonMatches = _driver.FindElements(By.XPath("//*[@id='sizemetr']/div/div[1]/script"))
             //                                                    .Select(e => JsonSerializer.Deserialize<BetonMatchJsonEntity>(e.Text)).ToList();
             var betonMatches = new List<Match>();
+            Thread.Sleep(3000);
 
             var matchFirstNames = _driver.FindElements(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), 'chm_event upcoming')]/div[2]/a[1]/div[1]/div[1]")).Select(e => e.Text).ToList();
             var matchSecondNames = _driver.FindElements(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), 'chm_event upcoming')]/div[2]/a[1]/div[3]/div[2]")).Select(e => e.Text).ToList();
