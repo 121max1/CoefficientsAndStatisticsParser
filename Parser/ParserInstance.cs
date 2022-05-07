@@ -201,7 +201,7 @@ namespace Parser
             //List<BetonMatchJsonEntity> betonMatches = _driver.FindElements(By.XPath("//*[@id='sizemetr']/div/div[1]/script"))
             //                                                    .Select(e => JsonSerializer.Deserialize<BetonMatchJsonEntity>(e.Text)).ToList();
             var betonMatches = new List<Match>();
-            Thread.Sleep(10000);
+            Thread.Sleep(3000);
 
             var matchFirstNames = _driver.FindElements(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), 'chm_event upcoming')]/div[2]/a[1]/div[1]/div[1]")).Select(e => e.Text).ToList();
             var matchSecondNames = _driver.FindElements(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), 'chm_event upcoming')]/div[2]/a[1]/div[3]/div[2]")).Select(e => e.Text).ToList();
@@ -231,6 +231,13 @@ namespace Parser
                 {
                     continue;
                 }
+
+                var cefficientsWinDrawLose = new CoefficientsWinDrawLose();
+                cefficientsWinDrawLose.TeamNameHome = betonMatch.FirstTeamName;
+                cefficientsWinDrawLose.TeamNameGuest = betonMatch.SecondTeamName;
+                cefficientsWinDrawLose.Date = betonMatch.Date.Date;
+                cefficientsWinDrawLose.MatchUrl = betonMatch.Url;
+                cefficientsWinDrawLose.CoefficientsPerBookmakercs = new List<CoefficientsPerBookmakercs>();
                 var tabs = _driver.FindElements(By.XPath("//div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-menu-item')]/span"));
                 var winDrawLoseTabNum = 0;
                 var HandicapTabNum = 0;
@@ -241,22 +248,12 @@ namespace Parser
                     {
                         winDrawLoseTabNum++;
                     }
-                }
-                catch
-                {
-                }
-                try
-                {
+
                     while (tabs[HandicapTabNum].Text != "Фора")
                     {
                         HandicapTabNum++;
                     }
-                }
-                catch
-                {
-                }
-                try
-                {
+
                     while (tabs[TotalTabNum].Text != "Тотал")
                     {
                         TotalTabNum++;
@@ -264,167 +261,151 @@ namespace Parser
                 }
                 catch
                 {
+                    continue;
                 }
                 winDrawLoseTabNum++;
                 HandicapTabNum++;
                 TotalTabNum++;
-                if (winDrawLoseTabNum - 1 != 0)
+                string getCoeffXpath = "//div[contains(concat(' ', normalize-space(@id), ' '), 'coefficients')]/div[3]/div[1]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')]/div";
+                var coeffsWinDrawLose = _driver.FindElements(By.XPath(getCoeffXpath)).Select(e => e.Text).ToList();
+                coeffsWinDrawLose.RemoveAll(s => s == "П1");
+                coeffsWinDrawLose.RemoveAll(s => s == "Х");
+                coeffsWinDrawLose.RemoveAll(s => s == "П2");
+                coeffsWinDrawLose.RemoveAt(0);
+                coeffsWinDrawLose.RemoveAt(6);
+                coeffsWinDrawLose.RemoveAt(12);
+                for (int i = 0; i < coeffsWinDrawLose.Count / 3; i++)
                 {
-                    var cefficientsWinDrawLose = new CoefficientsWinDrawLose();
-                    cefficientsWinDrawLose.TeamNameHome = betonMatch.FirstTeamName;
-                    cefficientsWinDrawLose.TeamNameGuest = betonMatch.SecondTeamName;
-                    cefficientsWinDrawLose.Date = betonMatch.Date.Date;
-                    cefficientsWinDrawLose.MatchUrl = betonMatch.Url;
-                    cefficientsWinDrawLose.CoefficientsPerBookmakercs = new List<CoefficientsPerBookmakercs>();
-
-                    string getCoeffXpath = "//div[contains(concat(' ', normalize-space(@id), ' '), 'coefficients')]/div[3]/div[1]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')]/div";
-                    var coeffsWinDrawLose = _driver.FindElements(By.XPath(getCoeffXpath)).Select(e => e.Text).ToList();
-                    coeffsWinDrawLose.RemoveAll(s => s == "П1");
-                    coeffsWinDrawLose.RemoveAll(s => s == "Х");
-                    coeffsWinDrawLose.RemoveAll(s => s == "П2");
-                    coeffsWinDrawLose.RemoveAt(0);
-                    coeffsWinDrawLose.RemoveAt(6);
-                    coeffsWinDrawLose.RemoveAt(12);
-                    for (int i = 0; i < coeffsWinDrawLose.Count / 3; i++)
+                    cefficientsWinDrawLose.CoefficientsPerBookmakercs.Add(new CoefficientsPerBookmakercs()
                     {
-                        cefficientsWinDrawLose.CoefficientsPerBookmakercs.Add(new CoefficientsPerBookmakercs()
-                        {
-                            Bookmaker = (Bookmaker)(i + 1),
-                            Win = coeffsWinDrawLose[i] == "-" ? null : coeffsWinDrawLose[i],
-                            Draw = coeffsWinDrawLose[i + 6] == "-" ? null : coeffsWinDrawLose[i + 6],
-                            Lose = coeffsWinDrawLose[i + 12] == "-" ? null : coeffsWinDrawLose[i + 12]
-                        });
+                        Bookmaker = (Bookmaker)(i + 1),
+                        Win = coeffsWinDrawLose[i] == "-" ? null : coeffsWinDrawLose[i],
+                        Draw = coeffsWinDrawLose[i + 6] == "-" ? null : coeffsWinDrawLose[i + 6],
+                        Lose = coeffsWinDrawLose[i + 12] == "-" ? null : coeffsWinDrawLose[i + 12]
+                    });
 
-                    }
-                    winDrawLoseCoeffs.Add(cefficientsWinDrawLose);
+                }
+                winDrawLoseCoeffs.Add(cefficientsWinDrawLose);
+
+                _driver.FindElement(By.XPath($"//*[@id='coefficients']/div[1]/div/div[{HandicapTabNum}]")).Click();
+                var coefficientsHandicap = new CoefficientsHandicap();
+                coefficientsHandicap.Date = betonMatch.Date;
+                coefficientsHandicap.TeamNameHome = betonMatch.FirstTeamName;
+                coefficientsHandicap.TeamNameGuest = betonMatch.SecondTeamName;
+                coefficientsHandicap.MatchUrl = betonMatch.Url;
+                coefficientsHandicap.BookmakerHandicapCoeffs = new List<BookmakerHandicap>();
+
+                var handicapValues = new Dictionary<string, List<string>>();
+                var rowsHandicapXpath = $"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{HandicapTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')]";
+                var rowsHandicap = _driver.FindElements(By.XPath(rowsHandicapXpath));
+                for (int i = 1; i < rowsHandicap.Count + 1; i++)
+                {
+                    var handicap = _driver.FindElement(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{HandicapTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div[1]")).Text;
+                    var handicapValuesPerRow =
+                        _driver.FindElements(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{HandicapTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div"))
+                        .Select(e => e.Text).ToList();
+                    handicapValuesPerRow.RemoveRange(0, 2);
+                    handicapValues.Add(handicap, handicapValuesPerRow);
                 }
 
-                if (HandicapTabNum - 1 != 0)
+                for (int i = 0; i < 6; i++)
                 {
-                    _driver.FindElement(By.XPath($"//*[@id='coefficients']/div[1]/div/div[{HandicapTabNum}]")).Click();
-                    var coefficientsHandicap = new CoefficientsHandicap();
-                    coefficientsHandicap.Date = betonMatch.Date;
-                    coefficientsHandicap.TeamNameHome = betonMatch.FirstTeamName;
-                    coefficientsHandicap.TeamNameGuest = betonMatch.SecondTeamName;
-                    coefficientsHandicap.MatchUrl = betonMatch.Url;
-                    coefficientsHandicap.BookmakerHandicapCoeffs = new List<BookmakerHandicap>();
-
-                    var handicapValues = new Dictionary<string, List<string>>();
-                    var rowsHandicapXpath = $"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{HandicapTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')]";
-                    var rowsHandicap = _driver.FindElements(By.XPath(rowsHandicapXpath));
-                    for (int i = 1; i < rowsHandicap.Count + 1; i++)
-                    {
-                        var handicap = _driver.FindElement(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{HandicapTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div[1]")).Text;
-                        var handicapValuesPerRow =
-                            _driver.FindElements(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{HandicapTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div"))
-                            .Select(e => e.Text).ToList();
-                        handicapValuesPerRow.RemoveRange(0, 2);
-                        handicapValues.Add(handicap, handicapValuesPerRow);
-                    }
+                    var bookmakerHandicap = new BookmakerHandicap();
+                    bookmakerHandicap.Bookmaker = (Bookmaker)(i + 1);
+                    bookmakerHandicap.HandicapCoeffs = new List<HandicapCoeff>();
+                    bookmakerHandicap.HandicapCoeffsInvert = new List<HandicapCoeff>();
+                    coefficientsHandicap.BookmakerHandicapCoeffs.Add(bookmakerHandicap);
+                }
+                for (double handicapAmount = 0; handicapAmount < 4.5; handicapAmount += 0.5)
+                {
+                    string handicapAmountForNegative = handicapAmount == 0 ? "0" : $"{handicapAmount * (-1)}";
+                    string handicapValueNegativeFirstTeam = $"Ф1 ({handicapAmountForNegative})";
+                    string handicapValuePositiveFirstTeam = $"Ф1 ({handicapAmount})";
+                    string handicapValueNegativeSecondTeam = $"Ф2 ({handicapAmountForNegative})";
+                    string handicapValuePositiveSecondTeam = $"Ф2 ({handicapAmount})";
+                    var handicapNegativeCoeffsFirstTeam = handicapValues.FirstOrDefault(p => p.Key == handicapValueNegativeFirstTeam).Value;
+                    var handicapPositiveCoeffsSecondTeam = handicapValues.FirstOrDefault(p => p.Key == handicapValuePositiveSecondTeam).Value;
+                    var handicapPositiveCoeffsFirstTeamInvert = handicapValues.FirstOrDefault(p => p.Key == handicapValuePositiveFirstTeam).Value;
+                    var handicapNegativeCoeffsSecondTeamInvert = handicapValues.FirstOrDefault(p => p.Key == handicapValueNegativeSecondTeam).Value;
 
                     for (int i = 0; i < 6; i++)
                     {
-                        var bookmakerHandicap = new BookmakerHandicap();
-                        bookmakerHandicap.Bookmaker = (Bookmaker)(i + 1);
-                        bookmakerHandicap.HandicapCoeffs = new List<HandicapCoeff>();
-                        bookmakerHandicap.HandicapCoeffsInvert = new List<HandicapCoeff>();
-                        coefficientsHandicap.BookmakerHandicapCoeffs.Add(bookmakerHandicap);
-                    }
-                    for (double handicapAmount = 0; handicapAmount < 4.5; handicapAmount += 0.5)
-                    {
-                        string handicapAmountForNegative = handicapAmount == 0 ? "0" : $"{handicapAmount * (-1)}";
-                        string handicapValueNegativeFirstTeam = $"Ф1 ({handicapAmountForNegative})";
-                        string handicapValuePositiveFirstTeam = $"Ф1 ({handicapAmount})";
-                        string handicapValueNegativeSecondTeam = $"Ф2 ({handicapAmountForNegative})";
-                        string handicapValuePositiveSecondTeam = $"Ф2 ({handicapAmount})";
-                        var handicapNegativeCoeffsFirstTeam = handicapValues.FirstOrDefault(p => p.Key == handicapValueNegativeFirstTeam).Value;
-                        var handicapPositiveCoeffsSecondTeam = handicapValues.FirstOrDefault(p => p.Key == handicapValuePositiveSecondTeam).Value;
-                        var handicapPositiveCoeffsFirstTeamInvert = handicapValues.FirstOrDefault(p => p.Key == handicapValuePositiveFirstTeam).Value;
-                        var handicapNegativeCoeffsSecondTeamInvert = handicapValues.FirstOrDefault(p => p.Key == handicapValueNegativeSecondTeam).Value;
+                        var handicapCoeff = new HandicapCoeff();
+                        handicapCoeff.Handicap = (Handicap)(int)(handicapAmount * 2 + 1);
+                        if (handicapNegativeCoeffsFirstTeam is not null)
+                            handicapCoeff.FirstTeam = handicapNegativeCoeffsFirstTeam[i] == "-" ? null : handicapNegativeCoeffsFirstTeam[i];
+                        else
+                            handicapCoeff.FirstTeam = null;
+                        if (handicapPositiveCoeffsSecondTeam is not null)
+                            handicapCoeff.SecondTeam = handicapPositiveCoeffsSecondTeam[i] == "-" ? null : handicapPositiveCoeffsSecondTeam[i];
+                        else
+                            handicapCoeff.SecondTeam = null;
+                        coefficientsHandicap.BookmakerHandicapCoeffs.FirstOrDefault(bhc => bhc.Bookmaker == (Bookmaker)(i + 1)).HandicapCoeffsInvert.Add(handicapCoeff);
 
-                        for (int i = 0; i < 6; i++)
-                        {
-                            var handicapCoeff = new HandicapCoeff();
-                            handicapCoeff.Handicap = (Handicap)(int)(handicapAmount * 2 + 1);
-                            if (handicapNegativeCoeffsFirstTeam is not null)
-                                handicapCoeff.FirstTeam = handicapNegativeCoeffsFirstTeam[i] == "-" ? null : handicapNegativeCoeffsFirstTeam[i];
-                            else
-                                handicapCoeff.FirstTeam = null;
-                            if (handicapPositiveCoeffsSecondTeam is not null)
-                                handicapCoeff.SecondTeam = handicapPositiveCoeffsSecondTeam[i] == "-" ? null : handicapPositiveCoeffsSecondTeam[i];
-                            else
-                                handicapCoeff.SecondTeam = null;
-                            coefficientsHandicap.BookmakerHandicapCoeffs.FirstOrDefault(bhc => bhc.Bookmaker == (Bookmaker)(i + 1)).HandicapCoeffsInvert.Add(handicapCoeff);
-
-                            var handicapCoeffInvert = new HandicapCoeff();
-                            handicapCoeffInvert.Handicap = (Handicap)(int)(handicapAmount * 2 + 1);
-                            if (handicapPositiveCoeffsFirstTeamInvert is not null)
-                                handicapCoeffInvert.FirstTeam = handicapPositiveCoeffsFirstTeamInvert[i] == "-" ? null : handicapPositiveCoeffsFirstTeamInvert[i];
-                            else
-                                handicapCoeffInvert.FirstTeam = null;
-                            if (handicapNegativeCoeffsSecondTeamInvert is not null)
-                                handicapCoeffInvert.SecondTeam = handicapNegativeCoeffsSecondTeamInvert[i] == "-" ? null : handicapNegativeCoeffsSecondTeamInvert[i];
-                            else
-                                handicapCoeffInvert.SecondTeam = null;
-                            coefficientsHandicap.BookmakerHandicapCoeffs.FirstOrDefault(bhc => bhc.Bookmaker == (Bookmaker)(i + 1)).HandicapCoeffs.Add(handicapCoeffInvert);
-                        }
+                        var handicapCoeffInvert = new HandicapCoeff();
+                        handicapCoeffInvert.Handicap = (Handicap)(int)(handicapAmount * 2 + 1);
+                        if (handicapPositiveCoeffsFirstTeamInvert is not null)
+                            handicapCoeffInvert.FirstTeam = handicapPositiveCoeffsFirstTeamInvert[i] == "-" ? null : handicapPositiveCoeffsFirstTeamInvert[i];
+                        else
+                            handicapCoeffInvert.FirstTeam = null;
+                        if (handicapNegativeCoeffsSecondTeamInvert is not null)
+                            handicapCoeffInvert.SecondTeam = handicapNegativeCoeffsSecondTeamInvert[i] == "-" ? null : handicapNegativeCoeffsSecondTeamInvert[i];
+                        else
+                            handicapCoeffInvert.SecondTeam = null;
+                        coefficientsHandicap.BookmakerHandicapCoeffs.FirstOrDefault(bhc => bhc.Bookmaker == (Bookmaker)(i + 1)).HandicapCoeffs.Add(handicapCoeffInvert);
                     }
-                    handicapCoeffs.Add(coefficientsHandicap);
                 }
+                handicapCoeffs.Add(coefficientsHandicap);
 
-                if (TotalTabNum - 1 != 0)
+                _driver.FindElement(By.XPath($"//*[@id='coefficients']/div[1]/div/div[{TotalTabNum}]")).Click();
+                var coefficientsTotal = new CoefficientsTotal();
+                coefficientsTotal.Date = betonMatch.Date;
+                coefficientsTotal.TeamNameHome = betonMatch.FirstTeamName;
+                coefficientsTotal.TeamNameGuest = betonMatch.SecondTeamName;
+                coefficientsTotal.MatchUrl = betonMatch.Url;
+                coefficientsTotal.BookmakerTotals = new List<BookmakerTotal>();
+
+                var totalValues = new Dictionary<string, List<string>>();
+                string getTotalCoeffXpathRows = $"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{TotalTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')]";
+                var rowsTotal = _driver.FindElements(By.XPath(getTotalCoeffXpathRows));
+                for (int i = 1; i < rowsTotal.Count; i++)
                 {
+                    var total = _driver.FindElement(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{TotalTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div[1]")).Text;
+                    var totalValuesPerRow = _driver.FindElements(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{TotalTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div"))
+                        .Select(e => e.Text).ToList();
+                    totalValuesPerRow.RemoveRange(0, 2);
+                    totalValues.Add(total, totalValuesPerRow);
+                }
+                for (int i = 0; i < 6; i++)
+                {
+                    var bookmakerTotal = new BookmakerTotal();
+                    bookmakerTotal.Bookmaker = (Bookmaker)(i + 1);
+                    bookmakerTotal.TotalCoeffs = new List<TotalCoeff>();
+                    coefficientsTotal.BookmakerTotals.Add(bookmakerTotal);
+                }
+                for (double totalAmount = 1.5; totalAmount < 5; totalAmount += 0.5)
+                {
+                    string totalMoreValue = $"ТБ ({totalAmount})";
+                    string totalLessValue = $"ТМ ({totalAmount})";
+                    var totalMoreValueCoeffs = totalValues.FirstOrDefault(p => p.Key == totalMoreValue).Value;
+                    var totalLessValueCoeffs = totalValues.FirstOrDefault(p => p.Key == totalLessValue).Value;
 
-                    _driver.FindElement(By.XPath($"//*[@id='coefficients']/div[1]/div/div[{TotalTabNum}]")).Click();
-                    var coefficientsTotal = new CoefficientsTotal();
-                    coefficientsTotal.Date = betonMatch.Date;
-                    coefficientsTotal.TeamNameHome = betonMatch.FirstTeamName;
-                    coefficientsTotal.TeamNameGuest = betonMatch.SecondTeamName;
-                    coefficientsTotal.MatchUrl = betonMatch.Url;
-                    coefficientsTotal.BookmakerTotals = new List<BookmakerTotal>();
-
-                    var totalValues = new Dictionary<string, List<string>>();
-                    string getTotalCoeffXpathRows = $"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{TotalTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')]";
-                    var rowsTotal = _driver.FindElements(By.XPath(getTotalCoeffXpathRows));
-                    for (int i = 1; i < rowsTotal.Count; i++)
-                    {
-                        var total = _driver.FindElement(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{TotalTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div[1]")).Text;
-                        var totalValuesPerRow = _driver.FindElements(By.XPath($"//div[contains(concat(' ', normalize-space(@id), ' '), 'tab_c{TotalTabNum}')]/div[1]/div[1]/div[contains(concat(' ', normalize-space(@class), ' '), 'odds-table-item')][{i}]/div"))
-                            .Select(e => e.Text).ToList();
-                        totalValuesPerRow.RemoveRange(0, 2);
-                        totalValues.Add(total, totalValuesPerRow);
-                    }
                     for (int i = 0; i < 6; i++)
                     {
-                        var bookmakerTotal = new BookmakerTotal();
-                        bookmakerTotal.Bookmaker = (Bookmaker)(i + 1);
-                        bookmakerTotal.TotalCoeffs = new List<TotalCoeff>();
-                        coefficientsTotal.BookmakerTotals.Add(bookmakerTotal);
+                        var totalCoeff = new TotalCoeff();
+                        totalCoeff.Handicap = (Handicap)(int)(totalAmount * 2 + 1);
+                        if (totalMoreValueCoeffs is not null)
+                            totalCoeff.TotalMore = totalMoreValueCoeffs[i] == "-" ? null : totalMoreValueCoeffs[i];
+                        else
+                            totalCoeff.TotalMore = null;
+                        if (totalLessValueCoeffs is not null)
+                            totalCoeff.TotalLess = totalLessValueCoeffs[i] == "-" ? null : totalLessValueCoeffs[i];
+                        else
+                            totalCoeff.TotalLess = null;
+                        coefficientsTotal.BookmakerTotals.FirstOrDefault(bhc => bhc.Bookmaker == (Bookmaker)(i + 1)).TotalCoeffs.Add(totalCoeff);
                     }
-                    for (double totalAmount = 1.5; totalAmount < 5; totalAmount += 0.5)
-                    {
-                        string totalMoreValue = $"ТБ ({totalAmount})";
-                        string totalLessValue = $"ТМ ({totalAmount})";
-                        var totalMoreValueCoeffs = totalValues.FirstOrDefault(p => p.Key == totalMoreValue).Value;
-                        var totalLessValueCoeffs = totalValues.FirstOrDefault(p => p.Key == totalLessValue).Value;
-
-                        for (int i = 0; i < 6; i++)
-                        {
-                            var totalCoeff = new TotalCoeff();
-                            totalCoeff.Handicap = (Handicap)(int)(totalAmount * 2 + 1);
-                            if (totalMoreValueCoeffs is not null)
-                                totalCoeff.TotalMore = totalMoreValueCoeffs[i] == "-" ? null : totalMoreValueCoeffs[i];
-                            else
-                                totalCoeff.TotalMore = null;
-                            if (totalLessValueCoeffs is not null)
-                                totalCoeff.TotalLess = totalLessValueCoeffs[i] == "-" ? null : totalLessValueCoeffs[i];
-                            else
-                                totalCoeff.TotalLess = null;
-                            coefficientsTotal.BookmakerTotals.FirstOrDefault(bhc => bhc.Bookmaker == (Bookmaker)(i + 1)).TotalCoeffs.Add(totalCoeff);
-                        }
-                    }
-                    totalCoeffs.Add(coefficientsTotal);
                 }
+                totalCoeffs.Add(coefficientsTotal);
             }
 
             try
